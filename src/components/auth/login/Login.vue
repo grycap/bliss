@@ -13,7 +13,10 @@
                 <v-form>
                   <v-text-field append-icon="person" name="login" label="MinIO Enpoint" type="text"
                                 v-model="model.endpoint" required></v-text-field>
-        				  <span v-show="mistake.endpoint" style="color: #cc3300; font-size: 12px;"><b>Endpoint is required</b></span>
+
+        				  <span v-show="mistake.endpoint" style="color: #cc3300; font-size: 12px;"><b>Port</b></span>
+                  <v-text-field append-icon="person" name="login" label="MinIO Port" type="text"
+                                v-model="model.port" required></v-text-field>
 
                   <v-text-field append-icon="person" name="login" label="Access Key" type="text"
                                 v-model="model.access_key" required></v-text-field>
@@ -43,7 +46,8 @@ export default {
     model: {
       access_key: '',
       secret_key: '',
-      endpoint: ''
+      endpoint: '',
+      port:''
     }, 
     mistake: {
       access_key: false,
@@ -89,7 +93,7 @@ export default {
 
     if (this.model.access_key != "" && this.model.secret_key != "" && this.model.endpoint != ""){
           this.loading = true;		         
-          localStorage.setItem("session",JSON.stringify({ user: { access_key: this.model.access_key, secret_key: this.model.secret_key, endpoint: this.model.endpoint } }));
+          localStorage.setItem("session",JSON.stringify({ user: { access_key: this.model.access_key, secret_key: this.model.secret_key, endpoint: this.model.endpoint, port:this.model.port } }));
           this.$router.push("/dashboard");
           location.reload();
           // this.$router.replace(this.$route.query.redirect || "/dashboard");

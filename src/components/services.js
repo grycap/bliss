@@ -17,14 +17,21 @@ export default {
         // // var minio_useSSL = localStorage.getItem("useSSL");
         // var minio_accessKey = localStorage.getItem("accessKey");
         // var minio_secretKey = localStorage.getItem("secretKey");
+         var session = JSON.parse(localStorage.getItem("session"));
+		if ((session != null  && typeof session.user.access_key != "undefined" && typeof session.user.secret_key != "undefined"  && typeof session.user.endpoint != "undefined")) {
+        console.log(this.loggedIn)
+        this.loggedIn = true;
+				console.log(session.user);
+				// $(".users-dropdown").text(session.user.username);
+			}  
 
         var Minio = require('minio')
         this.minioClient = new Minio.Client({
-			endPoint: this.env.endPoint,    
-			port: this.env.port,   
-			useSSL: true,
-			accessKey: this.env.accessKey,
-			secretKey: this.env.secretKey
+			endPoint: session.user.endpoint,    
+			port: session.user.port,   
+			// useSSL: true,
+			accessKey: session.user.access_key,
+			secretKey: session.user.secret_key
 		})
 
 
