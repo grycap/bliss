@@ -25,6 +25,7 @@ export default {
 				// $(".users-dropdown").text(session.user.username);
 			}  
 
+            
         var Minio = require('minio')
         this.minioClient = new Minio.Client({
 			endPoint: session.user.endpoint,    
