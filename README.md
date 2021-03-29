@@ -1,4 +1,4 @@
-# minio-oscar
+# BLISS Bucket-based Listed Images Side-to-Side
 
 ## Project setup
 ```
@@ -15,13 +15,6 @@ npm run serve
 npm run build
 ```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
-# minio-oscar
-# minio-oscar
-# minio-oscar
+
