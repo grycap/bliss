@@ -50,14 +50,6 @@
 									fa fa-refresh
 								</v-icon>
 								</v-btn>
-
-							<!-- <span>Refresh:</span>
-							<v-btn
-								icon
-								color="indigo"
-								>
-								<v-icon>fa fa-refresh</v-icon>
-							</v-btn> -->
 						</v-col>
 					</v-row>
 
@@ -65,70 +57,78 @@
 			</v-col>
 		</v-row>
 		<v-row style="padding-right:40px; padding-left:40px;" >
-			<v-col class="col-12 col-md-6">
-				<v-card style="padding-right:40px; padding-left:40px;height:75vh;overflow-y: auto;" >
-					<h1 style="padding-top:20px;" class="text-center">Input Bucket</h1>
+			<v-col>
+				<v-card style="padding-right:40px; padding-left:40px;height:75vh;overflow-y: auto;">
+					<v-row>
 
-					<v-select 
-						:items="buckets"
-						label="Select ..."
-						single-line
-						:disabled='select_disabled'
-						@change="inputFilesBucket"
-						v-model = inputBucket
-					></v-select>
+						<v-col class="col-12 col-md-6">
+							<h1 style="padding-top:20px;" class="text-center">Input Bucket</h1>
 
-					<v-col v-for="(n, i) in inputURL" :key="i">
-						<v-row style="justify-content: center;" >
-							<span >{{n.file_name}}</span>
-							<v-btn
-								icon
-								color="blue"
-								@click="download(n.url,n.file_name)"
-							>
-								<v-icon>fa fa-download</v-icon>
-							</v-btn>
+							<v-select 
+								:items="buckets"
+								label="Select ..."
+								single-line
+								:disabled='select_disabled'
+								@change="inputFilesBucket"
+								v-model = inputBucket
+							></v-select>
 
-						</v-row>
-						<v-img 
-							style="margin-top: 15px;"
-							:src="n.url"
-							height="300"
-							contain
-							aspect-ratio="1"
-						></v-img>
-					</v-col>
+							<v-col v-for="(n, i) in inputURL" :key="i">
+								<v-row style="justify-content: center;padding-top:10px;" >
+									<span >{{n.file_name}}</span>
+									<v-btn
+										icon
+										color="blue"
+										@click="download(n.url,n.file_name)"
+									>
+										<v-icon>fa fa-download</v-icon>
+									</v-btn>
+
+								</v-row>
+								<v-img 
+									style="margin-top: 15px;"
+									:src="n.url"
+									height="300"
+									contain
+									aspect-ratio="1"
+								></v-img>
+							</v-col>
+						</v-col>
+						<v-col class="col-12 col-md-6">
+							<h1  style="padding-top:20px;" class="text-center">Output Bucket</h1>
+							<v-select
+								:items="buckets"
+								label="Select ..."
+								single-line
+								:disabled='select_disabled'
+								@change="outputFilesBucket"
+								v-model = outputBucket
+							></v-select>
+
+							<v-col v-for="(n, i) in outputURL" :key="i">
+								<v-row style="justify-content: center;padding-top:10px;" >
+									<span>{{n.file_name}}</span>
+									<v-btn
+										icon
+										color="blue"
+										@click="download(n.url,n.file_name)"
+									>
+										<v-icon>fa fa-download</v-icon>
+									</v-btn>
+								</v-row>
+								<v-img 
+									style="margin-top: 15px;"
+									:src="n.url"
+									height="300"
+									contain
+									aspect-ratio="1"
+								></v-img>
+							</v-col>
+						</v-col>
+					</v-row>
+
 				</v-card>
-			</v-col>
-			<v-col class="col-12 col-md-6">
-				<v-card style="padding-right:40px; padding-left:40px;height:75vh;overflow-y: auto;"  >
-					<h1  style="padding-top:20px;" class="text-center">Output Bucket</h1>
-					<v-select
-						:items="buckets"
-						label="Select ..."
-						single-line
-						:disabled='select_disabled'
-						@change="outputFilesBucket"
-						v-model = outputBucket
-					></v-select>
 
-					<v-col v-for="(n, i) in outputURL" :key="i">
-						<span>{{n.file_name}}</span>
-						<v-btn
-							icon
-							color="blue"
-							@click="download(n.url,n.file_name)"
-						>
-							<v-icon>fa fa-download</v-icon>
-						</v-btn>
-						<v-img 
-							:src="n.url"
-							height="300"
-							contain
-							aspect-ratio="1"
-						></v-img>
-					</v-col>
-				</v-card>
 			</v-col>
 
 		</v-row>
@@ -270,13 +270,7 @@
 					}else{
 						var now = +new Date();
 						let lastModified = moment(response.files[i].lastModified).format('X');
-						console.log('now:'+now);
-						console.log('lastModified:'+lastModified);
-						console.log('time_to_set:'+time_to_set)
-						console.log('dif:'+(now - lastModified*1000))
 						var compareDatesBoolean = (now - lastModified*1000) < time_to_set;
-						// console.log(now - lastModified)
-						console.log(compareDatesBoolean)
 						if(compareDatesBoolean == true){
 							this.get_input_url.push(response.files[i])
 						}
@@ -299,7 +293,6 @@
 		},
 
 		previewInputFileCallBack(response){
-			console.log(response)
 			if(response.file_name != '' && response.url != ''){
 				this.inputURL.push(response);
 			}else{
@@ -311,7 +304,7 @@
 			console.log(response)
 			console.log(this.select_times)
 			if(response.err == ''){
-				this.get_input_url = [];
+				this.get_output_url = [];
 				if(this.select_times == 'Last hour'){
 					var time_to_set = 60 * 60 * 1000;
 
@@ -328,13 +321,8 @@
 					}else{
 						var now = +new Date();
 						let lastModified = moment(response.files[i].lastModified).format('X');
-						console.log('now:'+now);
-						console.log('lastModified:'+lastModified);
-						console.log('time_to_set:'+time_to_set)
-						console.log('dif:'+(now - lastModified*1000))
 						var compareDatesBoolean = (now - lastModified*1000) < time_to_set;
-						// console.log(now - lastModified)
-						console.log(compareDatesBoolean)
+					
 						if(compareDatesBoolean == true){
 							this.get_output_url.push(response.files[i])
 						}
@@ -343,13 +331,12 @@
 					
 					
 				}
-				console.log(this.get_output_url)
 				for (let z = 0; z < this.get_output_url.length; z++) {
 					var params = {
-						bucketName: this.inputBucket, 
+						bucketName: this.outputBucket, 
 						fileName: this.get_output_url[z].name
 					}
-					this.previewFileCall(params,this.previewInputFileCallBack);
+					this.previewFileCall(params,this.previewOutputFileCallBack);
 					
 				}
 			}
