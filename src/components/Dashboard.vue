@@ -26,12 +26,41 @@
 			<v-col>
 				<v-card style="padding-right:40px; padding-left:40px;">
 					<h1 style="padding-top:20px;" class="text-center">Select time to search</h1>
-					<v-select 
-						:items="times"
-						label="Select ..."
-						single-line
-						@change="timestamp"
-					></v-select>
+					<v-row style="padding-top:1rem;padding-bottom: 1rem;">
+						<v-col style="padding-bottom:1rem;" class="col-12 col-md-6">
+							<v-select
+								:items="times"
+								label="Select ..."
+								single-line
+								@change="timestamp"
+								v-model = select_times
+							></v-select>
+						</v-col>
+						<v-col class="col-12 col-md-6 text-center">
+							<v-btn
+								color="blue-grey"
+								class="ma-2 white--text"
+								@click="refresh()"
+								>
+								Refresh
+								<v-icon
+									right
+									dark
+								>
+									fa fa-refresh
+								</v-icon>
+								</v-btn>
+
+							<!-- <span>Refresh:</span>
+							<v-btn
+								icon
+								color="indigo"
+								>
+								<v-icon>fa fa-refresh</v-icon>
+							</v-btn> -->
+						</v-col>
+					</v-row>
+
 				</v-card>	
 			</v-col>
 		</v-row>
@@ -46,6 +75,7 @@
 						single-line
 						:disabled='select_disabled'
 						@change="inputFilesBucket"
+						v-model = inputBucket
 					></v-select>
 
 					<v-col v-for="(n, i) in inputURL" :key="i">
@@ -79,6 +109,7 @@
 						single-line
 						:disabled='select_disabled'
 						@change="outputFilesBucket"
+						v-model = outputBucket
 					></v-select>
 
 					<v-col v-for="(n, i) in outputURL" :key="i">
@@ -159,11 +190,28 @@
 
     },
     methods: {   
+
+		refresh(){
+			if(this.inputBucket != '' && this.inputBucket != 0 ){
+				this.inputFilesBucket();
+
+			}
+			if(this.outputBucket != '' && this.outputBucket != 0 ){
+				this.outputFilesBucket();
+
+			}
+		},
 		
 		timestamp(item){
 			if(item != ''){
-				this.select_times = item;
+				// this.select_times = item;
 				this.select_disabled = false;
+				this.inputBucket = 0;
+				this.outputBucket = 0;
+				this.inputURL = [];
+				this.outputURL = [];
+			}else{
+				this.select_disabled = true;
 			}
 		},
 
@@ -180,9 +228,10 @@
 
 		inputFilesBucket(item){
 			this.loading = true;
-			this.inputBucket = item;
+			this.inputURL = [];
+			// this.inputBucket = item;
 			var params = {
-				name: item,
+				name: this.inputBucket,
 				prefix: ''
 			}
 			this.getBucketFilesCall(params,this.getBucketInputFilesCallBack)
@@ -190,9 +239,10 @@
 
 		outputFilesBucket(item){
 			this.loading = true;
-			this.outputBucket = item;
+			this.outputURL = [];
+			// this.outputBucket = item;
 			var params = {
-				name: item,
+				name: this.outputBucket,
 				prefix: ''
 			}
 			this.getBucketFilesCall(params,this.getBucketOutputFilesCallBack)
@@ -201,21 +251,35 @@
 
 		getBucketInputFilesCallBack(response){
 			console.log(response)
+			console.log(this.select_times)
 			if(response.err == ''){
-				if(this.select_time == 'Last hour'){
-					var one_hour = 60 * 60 * 1000;
+				this.get_input_url = [];
+				if(this.select_times == 'Last hour'){
+					var time_to_set = 60 * 60 * 1000;
 
+				}else if(this.select_times == 'Last Day'){
+					var time_to_set = 60 * 60 * 24 * 1000;
+				}else if(this.select_times == 'Last Week'){
+					var time_to_set = 60 * 60 * 24 * 7 * 1000;
+				}else if(this.select_times == 'Last Month'){
+					var time_to_set = 60 * 60 * 24 * 30 * 1000;
 				}
 				for (let i = 0; i < response.files.length; i++) {
-					var now = +new Date();
-					let lastModified = moment(response.files[i].lastModified).format('X');
-					console.log(now);
-					console.log(lastModified);
-					var compareDatesBoolean = (now - lastModified) < one_hour;
-					// console.log(now - lastModified)
-					console.log(compareDatesBoolean)
-					if(compareDatesBoolean == true){
+					if(this.select_times == 'All'){
 						this.get_input_url.push(response.files[i])
+					}else{
+						var now = +new Date();
+						let lastModified = moment(response.files[i].lastModified).format('X');
+						console.log('now:'+now);
+						console.log('lastModified:'+lastModified);
+						console.log('time_to_set:'+time_to_set)
+						console.log('dif:'+(now - lastModified*1000))
+						var compareDatesBoolean = (now - lastModified*1000) < time_to_set;
+						// console.log(now - lastModified)
+						console.log(compareDatesBoolean)
+						if(compareDatesBoolean == true){
+							this.get_input_url.push(response.files[i])
+						}
 					}
 					
 					
@@ -225,7 +289,7 @@
 				for (let z = 0; z < this.get_input_url.length; z++) {
 					var params = {
 						bucketName: this.inputBucket, 
-						fileName: this.get_input_url[i].name
+						fileName: this.get_input_url[z].name
 					}
 					this.previewFileCall(params,this.previewInputFileCallBack);
 					
@@ -245,13 +309,47 @@
 
 		getBucketOutputFilesCallBack(response){
 			console.log(response)
+			console.log(this.select_times)
 			if(response.err == ''){
+				this.get_input_url = [];
+				if(this.select_times == 'Last hour'){
+					var time_to_set = 60 * 60 * 1000;
+
+				}else if(this.select_times == 'Last Day'){
+					var time_to_set = 60 * 60 * 24 * 1000;
+				}else if(this.select_times == 'Last Week'){
+					var time_to_set = 60 * 60 * 24 * 7 * 1000;
+				}else if(this.select_times == 'Last Month'){
+					var time_to_set = 60 * 60 * 24 * 30 * 1000;
+				}
 				for (let i = 0; i < response.files.length; i++) {
-					var params = {
-						bucketName: this.outputBucket, 
-						fileName: response.files[i].name
+					if(this.select_times == 'All'){
+						this.get_output_url.push(response.files[i])
+					}else{
+						var now = +new Date();
+						let lastModified = moment(response.files[i].lastModified).format('X');
+						console.log('now:'+now);
+						console.log('lastModified:'+lastModified);
+						console.log('time_to_set:'+time_to_set)
+						console.log('dif:'+(now - lastModified*1000))
+						var compareDatesBoolean = (now - lastModified*1000) < time_to_set;
+						// console.log(now - lastModified)
+						console.log(compareDatesBoolean)
+						if(compareDatesBoolean == true){
+							this.get_output_url.push(response.files[i])
+						}
 					}
-					this.previewFileCall(params,this.previewOutputFileCallBack);
+					
+					
+					
+				}
+				console.log(this.get_output_url)
+				for (let z = 0; z < this.get_output_url.length; z++) {
+					var params = {
+						bucketName: this.inputBucket, 
+						fileName: this.get_output_url[z].name
+					}
+					this.previewFileCall(params,this.previewInputFileCallBack);
 					
 				}
 			}
