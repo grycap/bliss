@@ -2,8 +2,9 @@ import Vue from 'vue'
 import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import router from './router/index'
+import Notifications from 'vue-notification'
 // import env from './env.js'
-
+Vue.use(Notifications)
 
 window.axios = require('axios')
 
