@@ -1,5 +1,6 @@
 // import JSZip from "jszip";
 // import JSZipUtils from "jszip-utils"
+
 export default {
     data: () => {
 		return {
@@ -19,13 +20,13 @@ export default {
         // var minio_secretKey = localStorage.getItem("secretKey");
          var session = JSON.parse(localStorage.getItem("session"));
 		 
-
+        console.log(session)
 
         var Minio = require('minio')
         this.minioClient = new Minio.Client({
 			endPoint: session.user.endpoint,    
 			port: parseInt(session.user.port),   
-			// useSSL: true,
+			useSSL: true,
 			accessKey: session.user.access_key,
 			secretKey: session.user.secret_key
 		})
@@ -46,6 +47,7 @@ export default {
         //******Minio's Call********/
         
         getBucketListCall(callBackHandler){
+            console.log()
             this.minioClient.listBuckets((err, buckets) => {
                 if (err) {
                     callBackHandler(err)
