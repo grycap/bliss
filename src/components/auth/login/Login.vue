@@ -46,9 +46,9 @@
 <script>
 import jwtDecode from "jwt-decode";
 import axios from 'axios';
-import Services from '../../services';
+// import Services from '../../services';
 export default {
-  mixins:[Services],
+  // mixins:[Services],
   data: () => ({
     loading: false,
     model: {
@@ -105,12 +105,20 @@ export default {
               .then(response => {
                   console.log(response)
                   localStorage.setItem("session",JSON.stringify({ user: { access_key: this.model.access_key, secret_key: this.model.secret_key, endpoint: this.model.endpoint, port:this.model.port } }));
-                  this.getBucketListCall(this.getBucketListCallBack)
+                  this.$router.push("/dashboard");
+                  location.reload();
+                  // this.getBucketListCall(this.getBucketListCallBack)
                  
                 // this.$router.replace(this.$route.query.redirect || "/dashboard");
               }).catch(error => {
                   console.log(error)
-                  this.getBucketListCall(this.getBucketListCallBack)
+                   this.loading = false;
+                   this.notifyVue("Error with credentials",'nc-icon nc-simple-remove','danger') 
+                    this.model.endpoint = ''
+                    this.model.port = ''
+                    this.model.access_key = ''
+                    this.model.secret_key = ''
+                  // this.getBucketListCall(this.getBucketListCallBack)
               });
                   
           
