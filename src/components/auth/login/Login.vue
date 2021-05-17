@@ -66,8 +66,17 @@ export default {
   
     
   }),
+  mounted(){
+    const queryString = window.location.href;
+    var url = new URL(queryString);
+    // example: http://localhost:8080/?ak=434343&minioEndpoint=https%3A%2F%2Fadc.com&minioPort=2344#/login?redirect=%2F
+    this.model.access_key = url.searchParams.get('ak');
+    this.model.endpoint = url.searchParams.get('minioEndpoint');
+    this.model.port = url.searchParams.get('minioPort');
+  },
   created(){
     localStorage.clear()
+   
   },
 
   methods: {
