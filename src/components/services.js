@@ -30,15 +30,6 @@ export default {
 			accessKey: session.user.access_key,
 			secretKey: session.user.secret_key
 		})
-
-
-        // this.minioClient = new Minio.Client({
-        //     endPoint: minio_endpoint,    
-        //     port: parseInt(minio_port),   
-        //     useSSL: true,
-        //     accessKey: minio_accessKey,
-        //     secretKey: minio_secretKey
-        // });
         // this.minioClient.setRequestOptions({rejectUnauthorized: false})
 
     },
@@ -47,7 +38,7 @@ export default {
         //******Minio's Call********/
         
         getBucketListCall(callBackHandler){
-            console.log()
+            console.log(this.minioClient)
             this.minioClient.listBuckets((err, buckets) => {
                 if (err) {
                     callBackHandler(err)
