@@ -16,7 +16,7 @@
                   <!-- <h1 class="flex my-4 primary--text">AWS + Machine Learning</h1> -->
                 </div>
                 <v-form>
-                  <v-text-field append-icon="mdi-web" name="login" label="MinIO Enpoint" type="text"
+                  <v-text-field append-icon="mdi-web" name="login" label="MinIO Endpoint" type="text"
                                 v-model="model.endpoint" required></v-text-field>
 
         				  <span v-show="mistake.endpoint" style="color: #cc3300; font-size: 12px;"><b>Port</b></span>
@@ -66,8 +66,17 @@ export default {
   
     
   }),
+  mounted(){
+    const queryString = window.location.href;
+    var url = new URL(queryString);
+    // example: http://localhost:8080/?ak=434343&minioEndpoint=https%3A%2F%2Fadc.com&minioPort=2344#/login?redirect=%2F
+    this.model.access_key = url.searchParams.get('ak');
+    this.model.endpoint = url.searchParams.get('minioEndpoint');
+    this.model.port = url.searchParams.get('minioPort');
+  },
   created(){
     localStorage.clear()
+   
   },
 
   methods: {
@@ -100,48 +109,41 @@ export default {
       }
 
       if (this.model.access_key != "" && this.model.secret_key != "" && this.model.endpoint != ""){
-            this.loading = true;		  
-            axios({url:'https://'+this.model.endpoint+':'+this.model.port+'/minio/health/cluster',method:'GET'})
-              .then(response => {
-                  console.log(response)
-                  localStorage.setItem("session",JSON.stringify({ user: { access_key: this.model.access_key, secret_key: this.model.secret_key, endpoint: this.model.endpoint, port:this.model.port } }));
+            this.loading = true;	
+            console.log(this.model.endpoint)
+            var trim_end = this.model.endpoint.trim();
+            var end1 = trim_end.replace(/(^\w+:|^)\/\//, ''); //remove https://
+            var end2 = end1.replace(/\/$/, ""); //remove slash at the end
+            var Minio = require('minio')
+            var minioClient = new Minio.Client({
+              endPoint: end2,    
+              port: parseInt(this.model.port),   
+              useSSL: true,
+              accessKey: this.model.access_key.trim(),
+              secretKey: this.model.secret_key.trim()
+            })
+            
+            minioClient.listBuckets((err, buckets) => {
+                if (err) {
+                  console.log("error")
+                  this.loading = false;
+                  this.notifyVue("Error with credentials",'nc-icon nc-simple-remove','danger') 
+                  // this.model.endpoint = ''
+                  // this.model.port = ''
+                  // this.model.access_key = ''
+                  this.model.secret_key = ''
+                    
+                }else{
+                  localStorage.setItem("session",JSON.stringify({ user: { access_key: this.model.access_key.trim(), secret_key: this.model.secret_key.trim(), endpoint: end2, port:this.model.port } }));
                   this.$router.push("/dashboard");
                   location.reload();
-                  // this.getBucketListCall(this.getBucketListCallBack)
-                 
-                // this.$router.replace(this.$route.query.redirect || "/dashboard");
-              }).catch(error => {
-                  console.log(error)
-                   this.loading = false;
-                   this.notifyVue("Error with credentials",'nc-icon nc-simple-remove','danger') 
-                    this.model.endpoint = ''
-                    this.model.port = ''
-                    this.model.access_key = ''
-                    this.model.secret_key = ''
-                  // this.getBucketListCall(this.getBucketListCallBack)
-              });
-                  
+                }
+                
+            })
           
       }
     },
-    getBucketListCallBack(response){
-			console.log(response.status)
-			if(response.length > 0){
-				 this.$router.push("/dashboard");
-          location.reload();
-			}else{
-				console.log("error")
-			  this.loading = false;
-        this.notifyVue("Error with credentials",'nc-icon nc-simple-remove','danger') 
-        this.model.endpoint = ''
-        this.model.port = ''
-        this.model.access_key = ''
-        this.model.secret_key = ''
-
-			}
-		},
     notifyVue (message) {
-        console.log('here')
         this.$notify(
           {
             title: "Error",
