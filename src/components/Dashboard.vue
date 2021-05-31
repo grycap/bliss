@@ -116,6 +116,17 @@
 								v-model = outputBucket
 							></v-select>
 
+							<h1 v-show="outputPrefix.length>1" style="padding-top:20px;" class="text-center">Folder</h1>
+
+							<v-select v-show="outputPrefix.length>1"
+								:items="outputPrefix"
+								label="Select ..."
+								single-line
+								:disabled='select_disabled'
+								@change="outputPrefixFilesFunct()"
+								v-model = outputPrefixFiles
+							></v-select>
+
 							<v-col v-for="(n, i) in outputURL" :key="i">
 								<v-row style="justify-content: center;padding-top:10px;" >
 									<span>{{n.file_name}}</span>
@@ -180,7 +191,9 @@
 		get_input_url: [],
 		get_output_url: [],
 		inputPrefix:['None'],
-		inputPrefixFiles:''
+		inputPrefixFiles:'',
+		outputPrefix:['None'],
+		outputPrefixFiles:''
 
 	 
                        
@@ -262,6 +275,22 @@
 				this.inputFilesBucket()
 			}else{
 				this.getBucketFilesCall(params,this.getBucketInputPrefixFilesCallBack)
+			}
+		},
+
+		outputPrefixFilesFunct(){
+			this.loading = true;
+			this.outputURL = [];
+			// this.inputBucket = item;
+			var params = {
+				name: this.outputBucket,
+				prefix: this.outputPrefixFiles
+			}
+			console.log(params)
+			if(this.outputPrefixFiles == 'None'){
+				this.outputFilesBucket()
+			}else{
+				this.getBucketFilesCall(params,this.getBucketOutputPrefixFilesCallBack)
 			}
 		},
 
@@ -359,8 +388,6 @@
 
 					
 				}
-				console.log(this.inputPrefix)
-				console.log(this.get_input_url)
 				for (let z = 0; z < this.get_input_url.length; z++) {
 					var params = {
 						bucketName: this.inputBucket, 
@@ -382,7 +409,7 @@
 			}
 		},
 
-		getBucketOutputFilesCallBack(response){
+		getBucketOutputPrefixFilesCallBack(response){
 			console.log(response)
 			console.log(this.select_times)
 			if(response.err == ''){
@@ -425,6 +452,51 @@
 			this.loading = false;
 		},
 
+		getBucketOutputFilesCallBack(response){
+			if(response.err == ''){
+				this.get_output_url = [];
+				if(this.select_times == 'Last hour'){
+					var time_to_set = 60 * 60 * 1000;
+
+				}else if(this.select_times == 'Last Day'){
+					var time_to_set = 60 * 60 * 24 * 1000;
+				}else if(this.select_times == 'Last Week'){
+					var time_to_set = 60 * 60 * 24 * 7 * 1000;
+				}else if(this.select_times == 'Last Month'){
+					var time_to_set = 60 * 60 * 24 * 30 * 1000;
+				}
+				for (let i = 0; i < response.files.length; i++) {
+					var file_path_length = response.files[i].name.split("/")
+					if(file_path_length.length == 1){
+						if(this.select_times == 'All'){
+							this.get_output_url.push(response.files[i])
+						}else{
+							var now = +new Date();
+							let lastModified = moment(response.files[i].lastModified).format('X');
+							var compareDatesBoolean = (now - lastModified*1000) < time_to_set;
+						
+							if(compareDatesBoolean == true){
+								this.get_output_url.push(response.files[i])
+							}
+						}
+
+					}else{
+						if(!this.outputPrefix.includes(file_path_length[0])){
+							this.outputPrefix.push(file_path_length[0])
+						}
+					}
+				}
+				for (let z = 0; z < this.get_output_url.length; z++) {
+					var params = {
+						bucketName: this.outputBucket, 
+						fileName: this.get_output_url[z].name
+					}
+					this.previewFileCall(params,this.previewOutputFileCallBack);
+					
+				}
+			}
+			this.loading = false;
+		},
 		previewOutputFileCallBack(response){
 			console.log(response)
 			if(response.file_name != '' && response.url != ''){
