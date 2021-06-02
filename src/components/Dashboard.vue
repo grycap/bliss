@@ -86,7 +86,7 @@
 
 							<v-col v-for="(n, i) in inputURL" :key="i">
 								<v-row style="justify-content: center;padding-top:10px;" >
-									<span >{{n.file_name}}</span>
+									<p >{{n.file_name}}</p>
 									<v-btn
 										icon
 										color="blue"
@@ -96,6 +96,7 @@
 									</v-btn>
 
 								</v-row>
+								<p class="text-center" >{{n.timestamp}}</p>
 								<v-img 
 									style="margin-top: 15px;"
 									:src="n.url"
@@ -129,7 +130,7 @@
 
 							<v-col v-for="(n, i) in outputURL" :key="i">
 								<v-row style="justify-content: center;padding-top:10px;" >
-									<span>{{n.file_name}}</span>
+									<p>{{n.file_name}}</p>
 									<v-btn
 										icon
 										color="blue"
@@ -138,6 +139,7 @@
 										<v-icon>fa fa-download</v-icon>
 									</v-btn>
 								</v-row>
+								<p class="text-center" >{{n.timestamp}}</p>
 								<v-img 
 									style="margin-top: 15px;"
 									:src="n.url"
@@ -219,11 +221,11 @@
 
 		refresh(){
 			if(this.inputBucket != '' && this.inputBucket != 0 ){
-				this.inputFilesBucket();
+				this.inputPrefixFilesFunct();
 
 			}
 			if(this.outputBucket != '' && this.outputBucket != 0 ){
-				this.outputFilesBucket();
+				this.outputPrefixFilesFunct();
 
 			}
 		},
@@ -286,7 +288,6 @@
 				name: this.outputBucket,
 				prefix: this.outputPrefixFiles
 			}
-			console.log(params)
 			if(this.outputPrefixFiles == 'None'){
 				this.outputFilesBucket()
 			}else{
@@ -307,9 +308,7 @@
 
 
 		getBucketInputFilesCallBack(response){
-			console.log(response)
-			console.log(this.select_times)
-			if(response.err == ''){
+				if(response.err == ''){
 				this.get_input_url = [];
 				if(this.select_times == 'Last hour'){
 					var time_to_set = 60 * 60 * 1000;
@@ -323,7 +322,6 @@
 				}
 				for (let i = 0; i < response.files.length; i++) {
 					var file_path_length = response.files[i].name.split("/")
-					console.log(file_path_length)
 					if(file_path_length.length == 1){
 						if(this.select_times == 'All'){
 							
@@ -343,12 +341,11 @@
 						}
 					}
 				}
-				console.log(this.inputPrefix)
-				console.log(this.get_input_url)
 				for (let z = 0; z < this.get_input_url.length; z++) {
 					var params = {
 						bucketName: this.inputBucket, 
-						fileName: this.get_input_url[z].name
+						fileName: this.get_input_url[z].name,
+						timestamp: moment(this.get_input_url[z].lastModified).format('DD-MM-YYYY HH:mm:ss')
 					}
 					this.previewFileCall(params,this.previewInputFileCallBack);
 					
@@ -358,8 +355,6 @@
 		},
 
 		getBucketInputPrefixFilesCallBack(response){
-			console.log(response)
-			console.log(this.select_times)
 			if(response.err == ''){
 				this.get_input_url = [];
 				if(this.select_times == 'Last hour'){
@@ -391,7 +386,8 @@
 				for (let z = 0; z < this.get_input_url.length; z++) {
 					var params = {
 						bucketName: this.inputBucket, 
-						fileName: this.get_input_url[z].name
+						fileName: this.get_input_url[z].name,
+						timestamp: moment(this.get_input_url[z].lastModified).format('DD-MM-YYYY HH:mm:ss')
 					}
 					this.previewFileCall(params,this.previewInputFileCallBack);
 					
@@ -407,11 +403,10 @@
 			}else{
 				console.log('error');
 			}
+			console.log(this.inputURL)
 		},
 
 		getBucketOutputPrefixFilesCallBack(response){
-			console.log(response)
-			console.log(this.select_times)
 			if(response.err == ''){
 				this.get_output_url = [];
 				if(this.select_times == 'Last hour'){
@@ -443,7 +438,8 @@
 				for (let z = 0; z < this.get_output_url.length; z++) {
 					var params = {
 						bucketName: this.outputBucket, 
-						fileName: this.get_output_url[z].name
+						fileName: this.get_output_url[z].name,
+						timestamp: moment(this.get_output_url[z].lastModified).format('DD-MM-YYYY HH:mm:ss')
 					}
 					this.previewFileCall(params,this.previewOutputFileCallBack);
 					
@@ -489,7 +485,8 @@
 				for (let z = 0; z < this.get_output_url.length; z++) {
 					var params = {
 						bucketName: this.outputBucket, 
-						fileName: this.get_output_url[z].name
+						fileName: this.get_output_url[z].name,
+						timestamp: moment(this.get_output_url[z].lastModified).format('DD-MM-YYYY HH:mm:ss')
 					}
 					this.previewFileCall(params,this.previewOutputFileCallBack);
 					
@@ -498,13 +495,11 @@
 			this.loading = false;
 		},
 		previewOutputFileCallBack(response){
-			console.log(response)
 			if(response.file_name != '' && response.url != ''){
 				this.outputURL.push(response);
 			}else{
 				console.log('error');
 			}
-			console.log(this.outputURL)
 		},
 
 		download(url,file_name){
@@ -512,7 +507,6 @@
 		},
 
 		downloadFileCallBack(response){
-			console.log(response)
 			var _this = this;
 			const url = window.URL.createObjectURL(new Blob([response.data.data]))
 			const link = document.createElement('a')
