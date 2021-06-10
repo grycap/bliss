@@ -101,6 +101,7 @@ export default {
                 }else{
                     var output = {
                         file_name : params.fileName,
+                        timestamp: params.timestamp,
                         url : presignedUrl
                     }
                     callBackHandler(output)
