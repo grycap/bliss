@@ -2,14 +2,14 @@
 	<v-container 
 	class="fill-height"
 	fluid
+	style="background-color: #F0F1F1;"
 	>   
 	<div  v-show="loading" class="loading-overlay is-active">
 		<span class="fa fa-spinner fa-5x fa-spin"></span>
 	</div>
-		<v-row align="center" justify="center">
+		<!-- <v-row align="center" justify="center">
 			<v-col >          
 				<v-parallax src="@/assets/fondoazul.jpg" alt="">
-				<!-- <v-spacer></v-spacer> -->
 				<v-layout
 					column
 					align-center
@@ -21,7 +21,7 @@
 				</v-layout>
 				</v-parallax>
 			</v-col>
-		</v-row>
+		</v-row> -->
 		<v-row style="padding-right:40px; padding-left:40px;" >
 			<v-col>
 				<v-card style="padding-right:40px; padding-left:40px;">
@@ -56,7 +56,7 @@
 				</v-card>	
 			</v-col>
 		</v-row>
-		<v-row style="padding-right:40px; padding-left:40px;" >
+		<v-row style="padding-right:40px; padding-left:40px;padding-bottom: 40px;" >
 			<v-col>
 				<v-card style="padding-right:40px; padding-left:40px;height:75vh;overflow-y: auto;">
 					<v-row>

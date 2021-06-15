@@ -1,5 +1,5 @@
 <template>
-  <v-app id="login" class="primary">
+  <v-app id="login" class="custom-color">
     <v-content>
       <v-container fluid fill-height>
         <v-layout align-center justify-center>
@@ -33,7 +33,7 @@
                 </v-form>
               </v-card-text>
               <v-card-actions>     
-                <v-btn block color="primary" @click.native="login()" :loading="loading">Sign in</v-btn>
+                <v-btn block style="background-color:rgb(64, 78, 103);color:white;" @click.native="login()" :loading="loading">Sign in</v-btn>
               </v-card-actions>              
             </v-card>
           </v-flex>
@@ -166,6 +166,10 @@ export default {
 }
 </script>
 <style scoped lang="scss">
+  .custom-color{
+    background-color: rgb(64, 78, 103)!important;
+    border-color: rgb(64, 78, 103);
+  }
   #login {
     height: 50%;
     width: 100%;
