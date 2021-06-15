@@ -73,9 +73,20 @@
 								v-model = inputBucket
 							></v-select>
 
+							<h1 v-show="inputPrefix.length>1" style="padding-top:20px;" class="text-center">Folder</h1>
+
+							<v-select v-show="inputPrefix.length>1"
+								:items="inputPrefix"
+								label="Select ..."
+								single-line
+								:disabled='select_disabled'
+								@change="inputPrefixFilesFunct()"
+								v-model = inputPrefixFiles
+							></v-select>
+
 							<v-col v-for="(n, i) in inputURL" :key="i">
 								<v-row style="justify-content: center;padding-top:10px;" >
-									<span >{{n.file_name}}</span>
+									<p >{{n.file_name}}</p>
 									<v-btn
 										icon
 										color="blue"
@@ -85,6 +96,7 @@
 									</v-btn>
 
 								</v-row>
+								<p class="text-center" >{{n.timestamp}}</p>
 								<v-img 
 									style="margin-top: 15px;"
 									:src="n.url"
@@ -105,9 +117,20 @@
 								v-model = outputBucket
 							></v-select>
 
+							<h1 v-show="outputPrefix.length>1" style="padding-top:20px;" class="text-center">Folder</h1>
+
+							<v-select v-show="outputPrefix.length>1"
+								:items="outputPrefix"
+								label="Select ..."
+								single-line
+								:disabled='select_disabled'
+								@change="outputPrefixFilesFunct()"
+								v-model = outputPrefixFiles
+							></v-select>
+
 							<v-col v-for="(n, i) in outputURL" :key="i">
 								<v-row style="justify-content: center;padding-top:10px;" >
-									<span>{{n.file_name}}</span>
+									<p>{{n.file_name}}</p>
 									<v-btn
 										icon
 										color="blue"
@@ -116,6 +139,7 @@
 										<v-icon>fa fa-download</v-icon>
 									</v-btn>
 								</v-row>
+								<p class="text-center" >{{n.timestamp}}</p>
 								<v-img 
 									style="margin-top: 15px;"
 									:src="n.url"
@@ -168,6 +192,10 @@
 		times:['Last hour', 'Last Day', 'Last Week', 'Last Month', 'All'],
 		get_input_url: [],
 		get_output_url: [],
+		inputPrefix:['None'],
+		inputPrefixFiles:'',
+		outputPrefix:['None'],
+		outputPrefixFiles:''
 
 	 
                        
@@ -193,11 +221,11 @@
 
 		refresh(){
 			if(this.inputBucket != '' && this.inputBucket != 0 ){
-				this.inputFilesBucket();
+				this.inputPrefixFilesFunct();
 
 			}
 			if(this.outputBucket != '' && this.outputBucket != 0 ){
-				this.outputFilesBucket();
+				this.outputPrefixFilesFunct();
 
 			}
 		},
@@ -226,7 +254,7 @@
 			this.loading = false;
 		},
 
-		inputFilesBucket(item){
+		inputFilesBucket(){
 			this.loading = true;
 			this.inputURL = [];
 			// this.inputBucket = item;
@@ -235,6 +263,36 @@
 				prefix: ''
 			}
 			this.getBucketFilesCall(params,this.getBucketInputFilesCallBack)
+		},
+
+		inputPrefixFilesFunct(){
+			this.loading = true;
+			this.inputURL = [];
+			// this.inputBucket = item;
+			var params = {
+				name: this.inputBucket,
+				prefix: this.inputPrefixFiles
+			}
+			if(this.inputPrefixFiles == 'None'){
+				this.inputFilesBucket()
+			}else{
+				this.getBucketFilesCall(params,this.getBucketInputPrefixFilesCallBack)
+			}
+		},
+
+		outputPrefixFilesFunct(){
+			this.loading = true;
+			this.outputURL = [];
+			// this.inputBucket = item;
+			var params = {
+				name: this.outputBucket,
+				prefix: this.outputPrefixFiles
+			}
+			if(this.outputPrefixFiles == 'None'){
+				this.outputFilesBucket()
+			}else{
+				this.getBucketFilesCall(params,this.getBucketOutputPrefixFilesCallBack)
+			}
 		},
 
 		outputFilesBucket(item){
@@ -250,8 +308,53 @@
 
 
 		getBucketInputFilesCallBack(response){
-			console.log(response)
-			console.log(this.select_times)
+				if(response.err == ''){
+				this.get_input_url = [];
+				if(this.select_times == 'Last hour'){
+					var time_to_set = 60 * 60 * 1000;
+
+				}else if(this.select_times == 'Last Day'){
+					var time_to_set = 60 * 60 * 24 * 1000;
+				}else if(this.select_times == 'Last Week'){
+					var time_to_set = 60 * 60 * 24 * 7 * 1000;
+				}else if(this.select_times == 'Last Month'){
+					var time_to_set = 60 * 60 * 24 * 30 * 1000;
+				}
+				for (let i = 0; i < response.files.length; i++) {
+					var file_path_length = response.files[i].name.split("/")
+					if(file_path_length.length == 1){
+						if(this.select_times == 'All'){
+							
+							this.get_input_url.push(response.files[i])
+						}else{
+							var now = +new Date();
+							let lastModified = moment(response.files[i].lastModified).format('X');
+							var compareDatesBoolean = (now - lastModified*1000) < time_to_set;
+							if(compareDatesBoolean == true){
+								this.get_input_url.push(response.files[i])
+							}
+						}
+
+					}else{
+						if(!this.inputPrefix.includes(file_path_length[0])){
+							this.inputPrefix.push(file_path_length[0])
+						}
+					}
+				}
+				for (let z = 0; z < this.get_input_url.length; z++) {
+					var params = {
+						bucketName: this.inputBucket, 
+						fileName: this.get_input_url[z].name,
+						timestamp: moment(this.get_input_url[z].lastModified).format('DD-MM-YYYY HH:mm:ss')
+					}
+					this.previewFileCall(params,this.previewInputFileCallBack);
+					
+				}
+			}
+			this.loading = false;
+		},
+
+		getBucketInputPrefixFilesCallBack(response){
 			if(response.err == ''){
 				this.get_input_url = [];
 				if(this.select_times == 'Last hour'){
@@ -265,7 +368,9 @@
 					var time_to_set = 60 * 60 * 24 * 30 * 1000;
 				}
 				for (let i = 0; i < response.files.length; i++) {
+				
 					if(this.select_times == 'All'){
+						
 						this.get_input_url.push(response.files[i])
 					}else{
 						var now = +new Date();
@@ -275,21 +380,21 @@
 							this.get_input_url.push(response.files[i])
 						}
 					}
-					
-					
+
 					
 				}
-				console.log(this.get_input_url)
 				for (let z = 0; z < this.get_input_url.length; z++) {
 					var params = {
 						bucketName: this.inputBucket, 
-						fileName: this.get_input_url[z].name
+						fileName: this.get_input_url[z].name,
+						timestamp: moment(this.get_input_url[z].lastModified).format('DD-MM-YYYY HH:mm:ss')
 					}
 					this.previewFileCall(params,this.previewInputFileCallBack);
 					
 				}
 			}
 			this.loading = false;
+
 		},
 
 		previewInputFileCallBack(response){
@@ -298,11 +403,10 @@
 			}else{
 				console.log('error');
 			}
+			console.log(this.inputURL)
 		},
 
-		getBucketOutputFilesCallBack(response){
-			console.log(response)
-			console.log(this.select_times)
+		getBucketOutputPrefixFilesCallBack(response){
 			if(response.err == ''){
 				this.get_output_url = [];
 				if(this.select_times == 'Last hour'){
@@ -334,7 +438,8 @@
 				for (let z = 0; z < this.get_output_url.length; z++) {
 					var params = {
 						bucketName: this.outputBucket, 
-						fileName: this.get_output_url[z].name
+						fileName: this.get_output_url[z].name,
+						timestamp: moment(this.get_output_url[z].lastModified).format('DD-MM-YYYY HH:mm:ss')
 					}
 					this.previewFileCall(params,this.previewOutputFileCallBack);
 					
@@ -343,14 +448,58 @@
 			this.loading = false;
 		},
 
+		getBucketOutputFilesCallBack(response){
+			if(response.err == ''){
+				this.get_output_url = [];
+				if(this.select_times == 'Last hour'){
+					var time_to_set = 60 * 60 * 1000;
+
+				}else if(this.select_times == 'Last Day'){
+					var time_to_set = 60 * 60 * 24 * 1000;
+				}else if(this.select_times == 'Last Week'){
+					var time_to_set = 60 * 60 * 24 * 7 * 1000;
+				}else if(this.select_times == 'Last Month'){
+					var time_to_set = 60 * 60 * 24 * 30 * 1000;
+				}
+				for (let i = 0; i < response.files.length; i++) {
+					var file_path_length = response.files[i].name.split("/")
+					if(file_path_length.length == 1){
+						if(this.select_times == 'All'){
+							this.get_output_url.push(response.files[i])
+						}else{
+							var now = +new Date();
+							let lastModified = moment(response.files[i].lastModified).format('X');
+							var compareDatesBoolean = (now - lastModified*1000) < time_to_set;
+						
+							if(compareDatesBoolean == true){
+								this.get_output_url.push(response.files[i])
+							}
+						}
+
+					}else{
+						if(!this.outputPrefix.includes(file_path_length[0])){
+							this.outputPrefix.push(file_path_length[0])
+						}
+					}
+				}
+				for (let z = 0; z < this.get_output_url.length; z++) {
+					var params = {
+						bucketName: this.outputBucket, 
+						fileName: this.get_output_url[z].name,
+						timestamp: moment(this.get_output_url[z].lastModified).format('DD-MM-YYYY HH:mm:ss')
+					}
+					this.previewFileCall(params,this.previewOutputFileCallBack);
+					
+				}
+			}
+			this.loading = false;
+		},
 		previewOutputFileCallBack(response){
-			console.log(response)
 			if(response.file_name != '' && response.url != ''){
 				this.outputURL.push(response);
 			}else{
 				console.log('error');
 			}
-			console.log(this.outputURL)
 		},
 
 		download(url,file_name){
@@ -358,7 +507,6 @@
 		},
 
 		downloadFileCallBack(response){
-			console.log(response)
 			var _this = this;
 			const url = window.URL.createObjectURL(new Blob([response.data.data]))
 			const link = document.createElement('a')
