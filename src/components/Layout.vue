@@ -9,7 +9,7 @@
         <v-list-item >
           <v-list-item-action>
             <v-btn text  @click.native="to_dashboard()">
-              <v-icon color="blue lighten-1">dashboard</v-icon>
+              <v-icon style="color:rgb(64, 78, 103);">dashboard</v-icon>
               Dashboard
             </v-btn> 
           </v-list-item-action>
@@ -18,7 +18,7 @@
         <v-list-item >
           <v-list-item-action>
             <v-btn text  @click.native="to_settings()">
-              <v-icon  color="blue lighten-1">settings</v-icon>
+              <v-icon  style="color:rgb(64, 78, 103);">settings</v-icon>
               Settings
             </v-btn>
           </v-list-item-action>          
@@ -26,7 +26,7 @@
          <v-list-item >
           <v-list-item-action>
              <v-btn text @click.native="logout()">
-              <v-icon color="blue lighten-1">logout</v-icon>
+              <v-icon style="color:rgb(64, 78, 103);">logout</v-icon>
               Log Out
             </v-btn>  
           </v-list-item-action>          
